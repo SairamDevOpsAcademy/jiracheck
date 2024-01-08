@@ -1,0 +1,34 @@
+name: Update Jira Ticket
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  update-jira:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Update Jira Ticket
+      run: |
+        # Extract Jira ticket ID from branch or pull request title
+        JIRA_TICKET=$(echo $GITHUB_HEAD_REF | grep -oE '[A-Z]+-[0-9]+')
+
+        # Check if Jira ticket ID is found
+        if [ -n "$JIRA_TICKET" ]; then
+          # Replace 'YOUR_JIRA_API_TOKEN' and 'YOUR_JIRA_BASE_URL' with your actual Jira API token and base URL
+          curl -X PUT \
+            -H "Authorization: Basic $(echo -n 'sairam.regunta@volunteer.heartfulness.org:OTg1NjY4MjYxNzU3Osd1QqeppnzoMOhTDXnw+Dej7RB1' | base64)" \
+            -H "Content-Type: application/json" \
+            -d '{"fields":{"summary":"'"$JIRA_TICKET"': Update summary here"}}' \
+            "https://myjira.sahajmarg.org/rest/api/2/issue/$JIRA_TICKET"
+        else
+          echo "No Jira ticket ID found in branch or pull request title."
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
